@@ -9,6 +9,7 @@ class PPMHuffmanTest:
 
     def encode_symbol(self, symbol, history):
         print(f"\nBuscando codificação para símbolo: '{symbol}'")
+        codes = []  # Lista para armazenar os códigos gerados
         
         # Verifica contextos de k=order até k=-1
         for k in range(self.ppm.order, -2, -1):
@@ -30,7 +31,6 @@ class PPMHuffmanTest:
                 
                 if frequencies:
                     print(f"\nTestando ordem {k}")
-                    # Prepara frequências para Huffman
                     freq_for_huffman = frequencies.copy()
                     if unique_symbols > 0:
                         freq_for_huffman['esc'] = unique_symbols
@@ -47,13 +47,13 @@ class PPMHuffmanTest:
                         return self.huffman.codes[symbol]
                     else:
                         print("Símbolo não encontrado. Codificando escape.")
-                        return self.huffman.codes['esc']
+                        codes.append(self.huffman.codes['esc'])
+                        continue  # Continua para próxima ordem
             
             # k = -1: equiprobabilidade para símbolos não vistos
             else:
                 unseen = self.ppm.alphabet - self.ppm.seen_symbols
                 if unseen:
-                    # Cria frequências uniformes
                     freq_for_huffman = {sym: 1 for sym in unseen}
                     print("\nUsando ordem -1 (equiprobabilidade)")
                     print("Frequências:")
@@ -65,9 +65,10 @@ class PPMHuffmanTest:
                     
                     if symbol in unseen:
                         print(f"Codificando símbolo não visto '{symbol}'")
-                        return self.huffman.codes[symbol]
+                        codes.append(self.huffman.codes[symbol])
+                        return "".join(codes)  # Retorna escape + código do símbolo
         
-        return None
+        return "".join(codes) if codes else None
 
 def main():
     alphabet = set('abcdr')  # Alfabeto reduzido para teste
