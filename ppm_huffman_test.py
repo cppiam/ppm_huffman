@@ -21,13 +21,29 @@ class PPMHuffmanTest:
                     context = "".join(history[-k:])
                     if context not in self.ppm.contexts[k]:
                         continue
-                    frequencies = self.ppm.contexts[k][context]['frequencies']
+                    frequencies = self.ppm.contexts[k][context]['frequencies'].copy()  # Cria uma cópia para não alterar o original
                     unique_symbols = len(self.ppm.contexts[k][context]['symbols'])
+
+                    # Exclusão: Remove símbolos vistos em contextos de ordem superior
+                    if k < self.ppm.order and len(history) >= k + 1:
+                        higher_context = "".join(history[-(k + 1):])
+                        if higher_context in self.ppm.contexts[k + 1]:
+                            seen_higher = self.ppm.contexts[k + 1][higher_context]['symbols']
+                            frequencies = {s: f for s, f in frequencies.items() if s not in seen_higher}
+                            unique_symbols = len(set(frequencies.keys()))
 
                 # Para k = 0
                 else:
-                    frequencies = self.ppm.k0_frequencies
+                    frequencies = self.ppm.k0_frequencies.copy()  # Cria uma cópia para não alterar o original
                     unique_symbols = self.ppm.k0_unique_symbols
+
+                    # Exclusão: Remove símbolos vistos em contextos de ordem superior
+                    if self.ppm.order > 0 and len(history) >= 1:
+                        higher_context = history[-1]
+                        if higher_context in self.ppm.contexts[1]:
+                            seen_higher = self.ppm.contexts[1][higher_context]['symbols']
+                            frequencies = {s: f for s, f in frequencies.items() if s not in seen_higher}
+                            unique_symbols = len(set(frequencies.keys()))
 
                 if frequencies:
                     print(f"\nTestando ordem {k}")
@@ -42,6 +58,7 @@ class PPMHuffmanTest:
                     self.huffman.build_tree(freq_for_huffman)
                     self.huffman.print_codes()
 
+                    # Verifica se o símbolo está presente nas frequências *após* a exclusão
                     if symbol in frequencies:
                         print(f"Símbolo encontrado! Codificando '{symbol}'")
                         return self.huffman.codes[symbol]
@@ -112,9 +129,9 @@ class PPMHuffmanTest:
             print("(Todos os símbolos já foram vistos)")
 
 def main():
-    alphabet = set('abcdr')  # Alfabeto reduzido para teste
-    text = "abracadabra"
-    order = 2
+    alphabet = set('abcdefghijklmnopqrstuvwxyz ')
+    text = input("Digite o texto: ")
+    order = int(input("Digite a ordem do contexto (K): "))
 
     model = PPMHuffmanTest(alphabet, order)
 
