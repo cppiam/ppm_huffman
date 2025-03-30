@@ -26,11 +26,13 @@ def remove_artifacts(text):
     text = text.replace('Ã­', 'i')  # í -> i
     text = text.replace('Ã“', 'o')  # Ó -> o
     text = text.replace('Ã³', 'o')  # ó -> o
+    text = text.replace('Ãš', 'u')  # Ú -> u
     text = text.replace('Ãº', 'u')  # ú -> u
 
     # Acentos graves (à)
     text = text.replace('Ã€', 'a')  # À -> a
     text = text.replace('Ã ', 'a')  # à -> a
+    text = text.replace('Ã¨', 'e')  # È -> e
 
     # Acentos circunflexos (â, ê, î, ô, û)
     text = text.replace('Ã‚', 'a')  # Â -> a
@@ -43,6 +45,7 @@ def remove_artifacts(text):
     # Til (ã, õ)
     text = text.replace('Ãƒ', 'a')  # Ã -> a
     text = text.replace('Ã£', 'a')  # ã -> a
+    text = text.replace('Ã±', 'n')  # ñ -> n
     text = text.replace('Ã•', 'o')  # Õ -> o
     text = text.replace('Ãµ', 'o')  # õ -> o
     

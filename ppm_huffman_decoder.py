@@ -102,7 +102,8 @@ class PPMHuffmanDecoder:
         return None, bitstream
 
 def main():
-    alphabet = set('abcdr')
+    alphabet = set('abcdefghijklmnopqrstuvwxyz ')
+    #alphabet = set('abcdr')
     order = int(input("Digite a ordem do contexto (K): "))
 
     decoder = PPMHuffmanDecoder(alphabet, order)
@@ -119,6 +120,7 @@ def main():
             print("ERRO: Cabeçalho inválido.")
             return
         num_simbolos = struct.unpack("<I", cabecalho)[0]
+        
 
         # Lê os dados codificados
         bitstream = ""
@@ -139,7 +141,7 @@ def main():
             decoded_text.append(symbol)
             decoder.ppm.update(symbol, history)
             history.append(symbol)
-
+    
     print("\nDecodificação concluída!")
     print(f"Texto original: {''.join(decoded_text)}")
 

@@ -54,7 +54,7 @@ class PPMHuffmanTest:
                             unique_symbols = len(set(frequencies.keys()))
 
                 if frequencies:
-                    freq_for_huffman = frequencies.copy()
+                    freq_for_huffman = {k: int(v) for k, v in frequencies.items()}  # Converte valores para inteiros
                     if unique_symbols > 0:
                         freq_for_huffman['esc'] = unique_symbols
 
@@ -64,7 +64,7 @@ class PPMHuffmanTest:
 
                     self.huffman.build_tree(freq_for_huffman)
 
-                    # Verifica se o símbolo está presente nas frequências *após* a exclusão
+                    # Calcula a probabilidade do símbolo
                     if symbol in frequencies:
                         if codes:  # Se já tem códigos de escape acumulados
                             codes.append(self.huffman.codes[symbol])
@@ -82,6 +82,7 @@ class PPMHuffmanTest:
                     if len(unseen) == 1:
                         return "".join(codes) if codes else ""
                     if symbol in unseen:
+                        
                         if codes:  # Se já tem códigos de escape
                             codes.append(self.fixed_codes[symbol])
                             return "".join(codes)
@@ -91,24 +92,32 @@ class PPMHuffmanTest:
         return "".join(codes) if codes else None
 
 def main():
-    alphabet = set('abcdr')
-    text = input("Digite o texto: ")
+    alphabet = set('abcdefghijklmnopqrstuvwxyz ')
     order = int(input("Digite a ordem do contexto (K): "))
 
     model = PPMHuffmanTest(alphabet, order)
 
-    print(f"Processando texto: '{text}'")
+    try:
+        with open("memorias_processed.txt", "r") as arquivo:
+            text = arquivo.read()
+            print(f"Processando texto do arquivo 'memorias_processed.txt': '{text}'")
+    except FileNotFoundError:
+        print("Arquivo 'memorias_processed.txt' não encontrado.")
+        return
 
     history = []
     bit_codificado = ""
+    entropia = 0.0
 
     with open("arquivo_codificado.bin", "wb") as arquivo_codificado:
         # Codifica os símbolos
-        bit_codificado = ""
         for symbol in text:
             code = model.encode_symbol(symbol, history)
             if code:
                 bit_codificado += code
+                #print(f"Probabilidade do símbolo '{symbol}': {probabilidade}") # Imprime a probabilidade antes de somar
+                #entropia += probabilidade * math.log2(1/probabilidade)
+
             model.ppm.update(symbol, history)
             history.append(symbol)
 
@@ -126,6 +135,9 @@ def main():
         escrever_bits_restantes(arquivo_codificado, bit_codificado)
 
     print("\nCodificação concluída. Dados escritos em 'arquivo_codificado.bin'.")
+    print(f"Número de símbolos: {num_simbolos}") # Imprime o número de símbolos
+    print(f"Número total de bits codificados: {len(bit_codificado)}") # Imprime o número total de bits codificados
+    #print(f"Entropia: {entropia}")
 
 if __name__ == "__main__":
     main()
