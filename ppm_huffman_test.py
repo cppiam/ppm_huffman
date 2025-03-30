@@ -85,6 +85,9 @@ class PPMHuffmanTest:
                 if unseen:
                     print("\nUsando ordem -1 (equiprobabilidade)")
                     self.update_fixed_codes(unseen)
+                    if len(unseen) == 1:  # Verifica se há apenas um símbolo restante
+                        print(f"Apenas um símbolo restante em k=-1: '{unseen[0]}'. Omitindo codificação.")
+                        return "".join(codes)  # Retorna apenas os códigos de escape
                     if symbol in unseen:
                         print(f"Codificando símbolo não visto '{symbol}': {self.fixed_codes[symbol]}")
                         codes.append(self.fixed_codes[symbol])
