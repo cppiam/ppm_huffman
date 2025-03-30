@@ -1,4 +1,5 @@
 import math
+import time
 import struct
 from huffman_simple import HuffmanSimple
 from PPMSimples import PPMModel
@@ -103,7 +104,6 @@ class PPMHuffmanDecoder:
 
 def main():
     alphabet = set('abcdefghijklmnopqrstuvwxyz ')
-    #alphabet = set('abcdr')
     order = int(input("Digite a ordem do contexto (K): "))
 
     decoder = PPMHuffmanDecoder(alphabet, order)
@@ -111,6 +111,7 @@ def main():
     history = []
     decoded_text = []
     bitstream = ""
+    inicio = time.time()
 
     # Leitura do arquivo binário
     with open("arquivo_codificado.bin", "rb") as arquivo_codificado:
@@ -142,8 +143,15 @@ def main():
             decoder.ppm.update(symbol, history)
             history.append(symbol)
     
+    fim = time.time()
+    tempo_execucao = fim - inicio
+
+    # Salva o texto decodificado em um arquivo
+    with open("arquivo_decodificado.txt", "w") as arquivo_decodificado:
+        arquivo_decodificado.write("".join(decoded_text))
+
     print("\nDecodificação concluída!")
-    print(f"Texto original: {''.join(decoded_text)}")
+    print(f"Tempo levado para descomprimir: {tempo_execucao:.2f} segundos")
 
 if __name__ == "__main__":
     main()

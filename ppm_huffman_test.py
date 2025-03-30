@@ -1,4 +1,5 @@
 import math
+import time
 import struct
 from huffman_simple import HuffmanSimple
 from PPMSimples import PPMModel
@@ -107,7 +108,9 @@ def main():
 
     history = []
     bit_codificado = ""
+    contador_bit = 0
     entropia = 0.0
+    inicio = time.time()
 
     with open("arquivo_codificado.bin", "wb") as arquivo_codificado:
         # Codifica os símbolos
@@ -123,7 +126,7 @@ def main():
 
         # Calcula o número de símbolos
         num_simbolos = len(text)
-
+        
         # Escreve o cabeçalho
         arquivo_codificado.write(struct.pack("<I", num_simbolos))  # '<I' indica inteiro little-endian de 4 bytes
 
@@ -132,11 +135,16 @@ def main():
             byte_para_escrever = bit_codificado[:8]
             escrever_byte(arquivo_codificado, byte_para_escrever)
             bit_codificado = bit_codificado[8:]
+            contador_bit += 1
         escrever_bits_restantes(arquivo_codificado, bit_codificado)
 
+    fim = time.time()
+    tempo_execucao = fim - inicio
+
+    contador_bit = (contador_bit * 8) + len(bit_codificado)
     print("\nCodificação concluída. Dados escritos em 'arquivo_codificado.bin'.")
-    print(f"Número de símbolos: {num_simbolos}") # Imprime o número de símbolos
-    print(f"Número total de bits codificados: {len(bit_codificado)}") # Imprime o número total de bits codificados
+    print(f"Tempo levado para comprimir: {tempo_execucao:.2f} segundos")
+    print(f"Comprimento médio: {num_simbolos} / {contador_bit} = {num_simbolos/contador_bit}") # Imprime o número de símbolos
     #print(f"Entropia: {entropia}")
 
 if __name__ == "__main__":
