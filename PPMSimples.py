@@ -69,7 +69,9 @@ class PPMModel:
             for symbol, count in sorted(self.k0_frequencies.items()):
                 prob = count / (total + self.k0_unique_symbols)
                 print(f"{symbol:<6} {count:<6} {prob:.4f}")
-            print(f"esc    {self.k0_unique_symbols:<6} {self.k0_unique_symbols / (total + self.k0_unique_symbols):.4f}")
+            # Verifica se todos os símbolos foram vistos
+            if len(self.seen_symbols) < len(self.alphabet):  # Apenas exibe 'esc' se nem todos os símbolos foram vistos
+                print(f"esc    {self.k0_unique_symbols:<6} {self.k0_unique_symbols / (total + self.k0_unique_symbols):.4f}")
         else:
             print(f"esc    {self.k0_unique_symbols:<6} 0.0000")
 
