@@ -1,3 +1,4 @@
+import math
 from huffman_simple import HuffmanSimple
 from PPMSimples import PPMModel
 
@@ -6,6 +7,11 @@ class PPMHuffmanTest:
         self.ppm = PPMModel(alphabet, order)
         self.huffman = HuffmanSimple()
         self.encoded_bits = []
+        self.symbol_codes = {}
+
+    def update_symbol_codes(self, symbol):
+        if symbol not in self.symbol_codes:
+            self.symbol_codes[symbol] = len(self.symbol_codes)
 
     def encode_symbol(self, symbol, history):
         print(f"\nBuscando codificação para símbolo: '{symbol}'")
@@ -55,6 +61,11 @@ class PPMHuffmanTest:
                     for sym, freq in sorted(freq_for_huffman.items()):
                         print(f"'{sym}': {freq}")
 
+                    # Verifica se todos os símbolos foram vistos
+                    if len(frequencies) == len(self.ppm.alphabet):
+                        print("Todos os símbolos vistos, removendo 'esc' da codificação.")
+                        freq_for_huffman.pop('esc', None)
+
                     self.huffman.build_tree(freq_for_huffman)
                     self.huffman.print_codes()
 
@@ -69,21 +80,17 @@ class PPMHuffmanTest:
 
             # k = -1: equiprobabilidade para símbolos não vistos
             else:
-                unseen = self.ppm.alphabet - self.ppm.seen_symbols
+                unseen = sorted(list(self.ppm.alphabet - self.ppm.seen_symbols))
                 if unseen:
-                    freq_for_huffman = {sym: 1 for sym in unseen}
                     print("\nUsando ordem -1 (equiprobabilidade)")
-                    print("Frequências:")
-                    for sym, freq in sorted(freq_for_huffman.items()):
-                        print(f"'{sym}': {freq}")
-
-                    self.huffman.build_tree(freq_for_huffman)
-                    self.huffman.print_codes()
-
+                    for unseen_symbol in unseen:
+                        self.update_symbol_codes(unseen_symbol)
                     if symbol in unseen:
-                        print(f"Codificando símbolo não visto '{symbol}'")
-                        codes.append(self.huffman.codes[symbol])
+                        print(f"Codificando símbolo não visto '{symbol}': {self.symbol_codes[symbol]}")
+                        codes.append(str(self.symbol_codes[symbol]))
                         return "".join(codes)  # Retorna escape + código do símbolo
+                else:
+                    print("(Todos os símbolos já foram vistos)")
 
         return "".join(codes) if codes else None
 
