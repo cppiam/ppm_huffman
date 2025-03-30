@@ -22,10 +22,6 @@ class HuffmanSimple:
         self.codes = {}
         
     def build_tree(self, frequencies):
-        """
-        Constrói árvore Huffman a partir de um dicionário de frequências
-        frequencies = {'a': 5, 'b': 2, ...}
-        """
         # Cria fila de prioridade
         heap = []
         for symbol, freq in sorted(frequencies.items()):  # Ordena os símbolos para consistência
@@ -64,24 +60,3 @@ class HuffmanSimple:
         print("-" * 20)
         for symbol, code in sorted(self.codes.items()):
             print(f"'{symbol}': {code}")
-
-def main():
-    # Exemplo simples
-    frequencies = {
-        'a': 5,
-        'b': 2,
-        'r': 3,
-        'c': 1,
-        'd': 1
-    }
-    
-    print("Frequências:")
-    for symbol, freq in sorted(frequencies.items()):
-        print(f"'{symbol}': {freq}")
-    
-    huffman = HuffmanSimple()
-    huffman.build_tree(frequencies)
-    huffman.print_codes()
-
-if __name__ == "__main__":
-    main()

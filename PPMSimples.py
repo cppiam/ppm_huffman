@@ -87,35 +87,3 @@ class PPMModel:
             print("(Todos os símbolos já foram vistos)")
 
         return context_data
-
-def main():
-    #alphabet = set('abcdefghijklmnopqrstuvwxyz ')
-    alphabet = set('abcdr')
-    text = input("Digite o texto: ")
-    order = int(input("Digite a ordem do contexto (K): "))
-
-    model = PPMModel(alphabet, order)
-
-    print("Processando texto:", text)
-    print("=" * 50)
-
-    history = []
-    for symbol in text:
-        print(f"\nLendo: '{symbol}'")
-        context_data = model.get_context_data(history)  # Obtém os dados do contexto antes de atualizar
-
-        if context_data:
-            print("\nDados do contexto de codificação:")
-            print(f"Contexto: {context_data['context']}")
-            print("Símbolos e contagens:", context_data['symbols'])
-
-        model.update(symbol, history)  # Atualiza o modelo com o símbolo atual
-        model.print_tables(history)  # Imprime as tabelas após a atualização
-        history.append(symbol)
-
-        input("\nPressione Enter para continuar...")
-        import os
-        os.system('cls')
-
-if __name__ == "__main__":
-    main()
