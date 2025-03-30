@@ -109,18 +109,20 @@ def main():
     history = []
     bit_codificado = ""
     contador_bit = 0
-    entropia = 0.0
+    entropia_total = 0.0
     inicio = time.time()
 
     with open("arquivo_codificado.bin", "wb") as arquivo_codificado:
         # Codifica os símbolos
         for symbol in text:
+            # Calcula a entropia antes de codificar
+            entropia = model.ppm.calculate_entropy(history)
+            entropia_total += entropia
             code = model.encode_symbol(symbol, history)
+
             if code:
                 bit_codificado += code
-                #print(f"Probabilidade do símbolo '{symbol}': {probabilidade}") # Imprime a probabilidade antes de somar
-                #entropia += probabilidade * math.log2(1/probabilidade)
-
+            
             model.ppm.update(symbol, history)
             history.append(symbol)
 
@@ -142,10 +144,12 @@ def main():
     tempo_execucao = fim - inicio
 
     contador_bit = (contador_bit * 8) + len(bit_codificado)
+    #Calcula apenas a entropia média
+    entropia_media = entropia_total / num_simbolos
     print("\nCodificação concluída. Dados escritos em 'arquivo_codificado.bin'.")
     print(f"Tempo levado para comprimir: {tempo_execucao:.2f} segundos")
-    print(f"Comprimento médio: {num_simbolos} / {contador_bit} = {num_simbolos/contador_bit}") # Imprime o número de símbolos
-    #print(f"Entropia: {entropia}")
+    print(f"Comprimento médio: {contador_bit} / {num_simbolos} = {contador_bit/num_simbolos} bits/símbolo") # Imprime o número de símbolos
+    print(f"Entropia média: {entropia_media:.4f} bits/símbolo")
 
 if __name__ == "__main__":
     main()
