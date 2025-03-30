@@ -1,6 +1,8 @@
 import math
+import struct
 from huffman_simple import HuffmanSimple
 from PPMSimples import PPMModel
+from arquivo_utils import ler_byte
 
 class PPMHuffmanDecoder:
     def __init__(self, alphabet, order):
@@ -100,26 +102,44 @@ class PPMHuffmanDecoder:
         return None, bitstream
 
 def main():
-    alphabet = set('asnir')
-    encoded_bits = input("Digite os bits codificados: ")
+    alphabet = set('abcdr')
     order = int(input("Digite a ordem do contexto (K): "))
 
     decoder = PPMHuffmanDecoder(alphabet, order)
     
     history = []
     decoded_text = []
-    bitstream = encoded_bits
-    
-    while bitstream:
-        symbol, bitstream = decoder.decode_symbol(bitstream, history)
-        if symbol is None:
-            print("ERRO: Não foi possível decodificar mais símbolos.")
-            break
-            
-        decoded_text.append(symbol)
-        decoder.ppm.update(symbol, history)
-        history.append(symbol)
-    
+    bitstream = ""
+
+    # Leitura do arquivo binário
+    with open("arquivo_codificado.bin", "rb") as arquivo_codificado:
+        # Lê o cabeçalho
+        cabecalho = arquivo_codificado.read(4)
+        if len(cabecalho) != 4:
+            print("ERRO: Cabeçalho inválido.")
+            return
+        num_simbolos = struct.unpack("<I", cabecalho)[0]
+
+        # Lê os dados codificados
+        bitstream = ""
+        while True:
+            byte_lido = ler_byte(arquivo_codificado)
+            if byte_lido is None:
+                break
+            bitstream += byte_lido
+
+        # Decodifica os símbolos
+        decoded_text = []
+        history = []
+        for _ in range(num_simbolos):
+            symbol, bitstream = decoder.decode_symbol(bitstream, history)
+            if symbol is None:
+                print("ERRO: Decodificação interrompida.")
+                break
+            decoded_text.append(symbol)
+            decoder.ppm.update(symbol, history)
+            history.append(symbol)
+
     print("\nDecodificação concluída!")
     print(f"Texto original: {''.join(decoded_text)}")
 

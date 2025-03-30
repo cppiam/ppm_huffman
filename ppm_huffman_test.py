@@ -1,6 +1,8 @@
 import math
+import struct
 from huffman_simple import HuffmanSimple
 from PPMSimples import PPMModel
+from arquivo_utils import escrever_byte, escrever_bits_restantes
 
 class PPMHuffmanTest:
     def __init__(self, alphabet, order):
@@ -89,7 +91,7 @@ class PPMHuffmanTest:
         return "".join(codes) if codes else None
 
 def main():
-    alphabet = set('asnir')
+    alphabet = set('abcdr')
     text = input("Digite o texto: ")
     order = int(input("Digite a ordem do contexto (K): "))
 
@@ -98,20 +100,32 @@ def main():
     print(f"Processando texto: '{text}'")
 
     history = []
-    encoded_bits = []
+    bit_codificado = ""
 
-    for symbol in text:
-        # Codifica
-        code = model.encode_symbol(symbol, history)
-        if code:
-            encoded_bits.append(code)
+    with open("arquivo_codificado.bin", "wb") as arquivo_codificado:
+        # Codifica os símbolos
+        bit_codificado = ""
+        for symbol in text:
+            code = model.encode_symbol(symbol, history)
+            if code:
+                bit_codificado += code
+            model.ppm.update(symbol, history)
+            history.append(symbol)
 
-        # Atualiza modelo PPM
-        model.ppm.update(symbol, history)
+        # Calcula o número de símbolos
+        num_simbolos = len(text)
 
-        history.append(symbol)
+        # Escreve o cabeçalho
+        arquivo_codificado.write(struct.pack("<I", num_simbolos))  # '<I' indica inteiro little-endian de 4 bytes
 
-    print("\nMensagem codificada final:", "".join(encoded_bits))
+        # Escreve os dados codificados
+        while len(bit_codificado) >= 8:
+            byte_para_escrever = bit_codificado[:8]
+            escrever_byte(arquivo_codificado, byte_para_escrever)
+            bit_codificado = bit_codificado[8:]
+        escrever_bits_restantes(arquivo_codificado, bit_codificado)
+
+    print("\nCodificação concluída. Dados escritos em 'arquivo_codificado.bin'.")
 
 if __name__ == "__main__":
     main()
