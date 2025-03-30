@@ -28,7 +28,7 @@ class PPMHuffmanTest:
                     context = "".join(history[-k:])
                     if context not in self.ppm.contexts[k]:
                         continue
-                    frequencies = self.ppm.contexts[k][context]['frequencies'].copy()  # Cria uma cópia para não alterar o original
+                    frequencies = self.ppm.contexts[k][context]['frequencies'].copy()
                     unique_symbols = len(self.ppm.contexts[k][context]['symbols'])
 
                     # Exclusão: Remove símbolos vistos em contextos de ordem superior
@@ -41,7 +41,7 @@ class PPMHuffmanTest:
 
                 # Para k = 0
                 else:
-                    frequencies = self.ppm.k0_frequencies.copy()  # Cria uma cópia para não alterar o original
+                    frequencies = self.ppm.k0_frequencies.copy()
                     unique_symbols = self.ppm.k0_unique_symbols
 
                     # Exclusão: Remove símbolos vistos em contextos de ordem superior
@@ -73,11 +73,14 @@ class PPMHuffmanTest:
                     # Verifica se o símbolo está presente nas frequências *após* a exclusão
                     if symbol in frequencies:
                         print(f"Símbolo encontrado! Codificando '{symbol}'")
-                        return self.huffman.codes[symbol]
+                        if codes:  # Se já tem códigos de escape acumulados
+                            codes.append(self.huffman.codes[symbol])
+                            return "".join(codes)
+                        else:
+                            return self.huffman.codes[symbol]
                     else:
                         print("Símbolo não encontrado. Codificando escape.")
                         codes.append(self.huffman.codes['esc'])
-                        # Não retorna aqui, continua para codificar o símbolo no k=-1
 
             # k = -1: equiprobabilidade para símbolos não vistos
             else:
@@ -85,13 +88,16 @@ class PPMHuffmanTest:
                 if unseen:
                     print("\nUsando ordem -1 (equiprobabilidade)")
                     self.update_fixed_codes(unseen)
-                    if len(unseen) == 1:  # Verifica se há apenas um símbolo restante
-                        print(f"Apenas um símbolo restante em k=-1: '{unseen[0]}'. Omitindo codificação.")
-                        return "".join(codes)  # Retorna apenas os códigos de escape
+                    if len(unseen) == 1:
+                        print(f"O único símbolo não visto é '{unseen[0]}'. Não é necessário codificá-lo explicitamente.")
+                        return "".join(codes) if codes else ""
                     if symbol in unseen:
                         print(f"Codificando símbolo não visto '{symbol}': {self.fixed_codes[symbol]}")
-                        codes.append(self.fixed_codes[symbol])
-                        return "".join(codes)  # Retorna escape + código do símbolo
+                        if codes:  # Se já tem códigos de escape
+                            codes.append(self.fixed_codes[symbol])
+                            return "".join(codes)
+                        else:
+                            return self.fixed_codes[symbol]
                 else:
                     print("(Todos os símbolos já foram vistos)")
 
@@ -139,7 +145,7 @@ class PPMHuffmanTest:
             print("(Todos os símbolos já foram vistos)")
 
 def main():
-    alphabet = set('abcdr')
+    alphabet = set('asinr')
     text = input("Digite o texto: ")
     order = int(input("Digite a ordem do contexto (K): "))
 
