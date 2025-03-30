@@ -7,11 +7,12 @@ class PPMHuffmanTest:
         self.ppm = PPMModel(alphabet, order)
         self.huffman = HuffmanSimple()
         self.encoded_bits = []
-        self.symbol_codes = {}
+        self.fixed_codes = {}
 
-    def update_symbol_codes(self, symbol):
-        if symbol not in self.symbol_codes:
-            self.symbol_codes[symbol] = len(self.symbol_codes)
+    def update_fixed_codes(self, unseen):
+        bits_per_symbol = math.ceil(math.log2(len(unseen)))
+        for i, symbol in enumerate(sorted(unseen)):
+            self.fixed_codes[symbol] = bin(i)[2:].zfill(bits_per_symbol)
 
     def encode_symbol(self, symbol, history):
         print(f"\nBuscando codificação para símbolo: '{symbol}'")
@@ -83,11 +84,10 @@ class PPMHuffmanTest:
                 unseen = sorted(list(self.ppm.alphabet - self.ppm.seen_symbols))
                 if unseen:
                     print("\nUsando ordem -1 (equiprobabilidade)")
-                    for unseen_symbol in unseen:
-                        self.update_symbol_codes(unseen_symbol)
+                    self.update_fixed_codes(unseen)
                     if symbol in unseen:
-                        print(f"Codificando símbolo não visto '{symbol}': {self.symbol_codes[symbol]}")
-                        codes.append(str(self.symbol_codes[symbol]))
+                        print(f"Codificando símbolo não visto '{symbol}': {self.fixed_codes[symbol]}")
+                        codes.append(self.fixed_codes[symbol])
                         return "".join(codes)  # Retorna escape + código do símbolo
                 else:
                     print("(Todos os símbolos já foram vistos)")
