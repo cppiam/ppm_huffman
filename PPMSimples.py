@@ -1,3 +1,5 @@
+import math
+
 class PPMModel:
     def __init__(self, alphabet, order):
         self.order = order
@@ -87,3 +89,66 @@ class PPMModel:
             print("(Todos os símbolos já foram vistos)")
 
         return context_data
+    def calculate_entropy(self, history):
+        """Calcula a entropia para o contexto atual em bits/símbolo"""
+        for k in range(self.order, -2, -1):
+            if k >= 0:
+                if k > 0:
+                    if len(history) < k:
+                        continue
+                    context = "".join(history[-k:])
+                    if context not in self.contexts[k]:
+                        continue
+                    frequencies = self.contexts[k][context]['frequencies'].copy()
+                    unique_symbols = len(self.contexts[k][context]['symbols'])
+                    total = sum(frequencies.values())
+                    
+                    # Aplica exclusão
+                    if k < self.order and len(history) >= k + 1:
+                        higher_context = "".join(history[-(k + 1):])
+                        if higher_context in self.contexts[k + 1]:
+                            seen_higher = self.contexts[k + 1][higher_context]['symbols']
+                            frequencies = {s: f for s, f in frequencies.items() if s not in seen_higher}
+                            unique_symbols = len(set(frequencies.keys()))
+                            total = sum(frequencies.values())
+                else:
+                    # k = 0
+                    frequencies = self.k0_frequencies.copy()
+                    unique_symbols = self.k0_unique_symbols
+                    total = sum(frequencies.values())
+                    
+                    # Aplica exclusão
+                    if self.order > 0 and len(history) >= 1:
+                        higher_context = history[-1]
+                        if higher_context in self.contexts[1]:
+                            seen_higher = self.contexts[1][higher_context]['symbols']
+                            frequencies = {s: f for s, f in frequencies.items() if s not in seen_higher}
+                            unique_symbols = len(set(frequencies.keys()))
+                            total = sum(frequencies.values())
+
+                if frequencies:
+                    denominator = total + unique_symbols
+                    if denominator == 0:
+                        continue
+                        
+                    entropy = 0.0
+                    # Probabilidades dos símbolos conhecidos
+                    for symbol, count in frequencies.items():
+                        prob = count / denominator
+                        if prob > 0:
+                            entropy -= prob * math.log2(prob)
+                    
+                    # Probabilidade do escape (se aplicável)
+                    if unique_symbols > 0 and len(frequencies) < len(self.alphabet):
+                        prob_esc = unique_symbols / denominator
+                        entropy -= prob_esc * math.log2(prob_esc)
+                    
+                    return entropy
+            
+            else:  # k = -1 (símbolos não vistos)
+                unseen = self.alphabet - self.seen_symbols
+                if unseen:
+                    prob = 1.0 / len(unseen)
+                    return -math.log2(prob)  # Todos têm a mesma probabilidade
+        
+        return 0.0  # Caso padrão
