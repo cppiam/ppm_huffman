@@ -136,7 +136,7 @@ class PPMHuffmanTest:
             print("(Todos os símbolos já foram vistos)")
 
 def main():
-    alphabet = set('abcdefghijklmnopqrstuvwxyz ')
+    alphabet = set('abcdr')
     text = input("Digite o texto: ")
     order = int(input("Digite a ordem do contexto (K): "))
 
