@@ -1,8 +1,8 @@
 import math
 import time
 import struct
-from huffman_simple import HuffmanSimple
-from PPMSimples import PPMModel
+from huffman import HuffmanSimple
+from PPM import PPMModel
 from arquivo_utils import escrever_byte, escrever_bits_restantes
 
 class PPMHuffmanTest:
@@ -101,15 +101,16 @@ def main():
     try:
         with open("memorias_processed.txt", "r") as arquivo:
             text = arquivo.read()
-            print(f"Processando texto do arquivo 'memorias_processed.txt': '{text}'")
+            print(f"Processando texto do arquivo 'memorias_processed.txt' (tamanho: {len(text)} caracteres)")
     except FileNotFoundError:
         print("Arquivo 'memorias_processed.txt' não encontrado.")
         return
 
     history = []
     bit_codificado = ""
-    contador_bit = 0
     entropia_total = 0.0
+    contador_bit = 0
+    num_simbolos = len(text)
     inicio = time.time()
 
     with open("arquivo_codificado.bin", "wb") as arquivo_codificado:
@@ -118,37 +119,39 @@ def main():
             # Calcula a entropia antes de codificar
             entropia = model.ppm.calculate_entropy(history)
             entropia_total += entropia
+            
             code = model.encode_symbol(symbol, history)
-
             if code:
                 bit_codificado += code
-            
+
             model.ppm.update(symbol, history)
             history.append(symbol)
 
-        # Calcula o número de símbolos
-        num_simbolos = len(text)
+        # Escreve o cabeçalho e dados
+        arquivo_codificado.write(struct.pack("<I", num_simbolos))
         
-        # Escreve o cabeçalho
-        arquivo_codificado.write(struct.pack("<I", num_simbolos))  # '<I' indica inteiro little-endian de 4 bytes
-
-        # Escreve os dados codificados
-        while len(bit_codificado) >= 8:
-            byte_para_escrever = bit_codificado[:8]
-            escrever_byte(arquivo_codificado, byte_para_escrever)
-            bit_codificado = bit_codificado[8:]
-            contador_bit += 1
-        escrever_bits_restantes(arquivo_codificado, bit_codificado)
+        # Escreve todos os bits completos (múltiplos de 8)
+        for i in range(0, len(bit_codificado), 8):
+            byte = bit_codificado[i:i+8]
+            if len(byte) == 8:
+                contador_bit += 8
+                escrever_byte(arquivo_codificado, byte)
+        
+        # Escreve bits restantes (se houver)
+        bits_restantes = len(bit_codificado) % 8
+        if bits_restantes > 0:
+            contador_bit += 8 - bits_restantes
+            escrever_bits_restantes(arquivo_codificado, bit_codificado[-bits_restantes:])
 
     fim = time.time()
     tempo_execucao = fim - inicio
 
-    contador_bit = (contador_bit * 8) + len(bit_codificado)
-    #Calcula apenas a entropia média
+    #Calcula a entropia média
     entropia_media = entropia_total / num_simbolos
+    comprimento_medio = contador_bit / num_simbolos
     print("\nCodificação concluída. Dados escritos em 'arquivo_codificado.bin'.")
     print(f"Tempo levado para comprimir: {tempo_execucao:.2f} segundos")
-    print(f"Comprimento médio: {contador_bit} / {num_simbolos} = {contador_bit/num_simbolos} bits/símbolo") # Imprime o número de símbolos
+    print(f"Comprimento médio: {comprimento_medio: .4f} bits/símbolo")
     print(f"Entropia média: {entropia_media:.4f} bits/símbolo")
 
 if __name__ == "__main__":
