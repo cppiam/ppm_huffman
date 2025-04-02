@@ -1,8 +1,8 @@
 import math
 import time
 import struct
-from huffman_simple import HuffmanSimple
-from PPMSimples import PPMModel
+from huffman import HuffmanSimple
+from PPM import PPMModel
 from arquivo_utils import ler_byte
 
 class PPMHuffmanDecoder:
